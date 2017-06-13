@@ -151,7 +151,7 @@ After the augmentation, the visualization of the data set looks as following:
 
 #### 2. Describe what your final model architecture looks like
 
-There is really a world of possibilities here, but as I am still beginner with neural networks and I don't have much CPU resources available for training, I decided to not diverge much from the already proven LeNet architecture. However, [Traffic Sign Recognition with Multi-Scale Convolutional Networks](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf) has proven as a geat source of information and inspired me for some modifications. So my final model consist of the following layers:
+There is really a world of possibilities here, but as I am still beginner with neural networks and I don't have much CPU resources available for training, I decided to not diverge much from the already proven LeNet-5 architecture. However, [Traffic Sign Recognition with Multi-Scale Convolutional Networks](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf) has proven as a geat source of information and inspired me for some modifications. So my final model consist of the following layers:
 
 
 | Layer 				| Description			 						| 
@@ -225,36 +225,55 @@ I further added a L2 regularisation loss with a factor of 0.001 in order to figh
 
 As batch size I have chosen 391, because that nicely splits the training set into 89 batches without remainer. Since the entire data set of 34799 * 32 * 32 * 1 float would actually fit into my RAM, the batching would is not absultely necessary. But as I have the same amount of each sample due to the augmentation, I supposed that the random selections of the batches is representative enough so I can use the batching as a way to improve the learning frequency.
 
-For the learning rate I started with a value 0.001 as in the LeNet implementation, but then rather quickly ended up having to adjusts the rate down each time the validation set accuracy would begin drop due to diverging weight steps. I ended up using a learning rate of 0.0001 for the first ten epochs.
+For the learning rate I started with a value 0.001 as in the LeNet implementation, but then rather quickly ended up having to adjust the rate down each time the validation set accuracy would begin drop due to diverging weight steps. I ended up using a successively smaller learning rate the later the epoch and ended up with learning rates of  0.0001.
 
-As the number of epochs I used iterations 10 before save the trained weights. Each sucessive iteration of those 10 epochs allowed me to adjust the hyper parameters as needed. Heres a graph of the learning process:
+As the number of epochs I used iterations of 10 before saving the trained weights. Each sucessive iteration of those 10 epochs allowed me to adjust the hyper parameters as needed. Here's a graph of the learning process with basic LeNet-5 on augmented and preprocessed data:
 
 ![Learning rates][image12]
 
 
 #### 4. Describe the approach taken for finding a solution
 
-and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+During my quest for a good solution I've made quite some beginner errors: 
+* I wasted alot of time playing around with different network structures **before** having actually normalized and augmented the data set
+* I added regularization techniques like dropout and L2 regularizaton already to the very first models, thus unnecessarily decreasing the learning speed
+* I only compared the bare results of the learning process (accurracy/confusion matrix) after a fixed amount of epochs in order to separate good from supposedly bad models, thus misjudging models with slower learing rate but ultimately better results at higher epochs
 
+So at some point I  had to start all over, extending the basic LeNet-5  model iteratively and watching the results more carefully. After 20 epochs the base model has lead to the following result:
+* **0.995%** accuracy in training set
+* **0.957%** accuracy in validation set
 
+While this would already satisfies the minimum project requirement, looking at the learning graph has made some imminent problems visible:
+* The mean cross entropy curve has fallen almot flat since about epoch 20, so it looks like learn success has already gone as far as it could
+* The training accuracy of almost 100% also supports the above assumption 
+* The training error and validation error constantly kept diverging since the start of learning, showing massively overfitting
 
-My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+In the first steps, I kept ignoring the overfitting and tried to focus to lower the validations minimum cross entropy. To achieve this, I have tried to make the model deeper, so it may adjust to more complex pattern relations. While the approach to add 1x1 convolutions might have been successful to some extent too, (being inspired by AlexNet) I rather followed the option to add another convolution to the pyramid. 
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+With this 3 layer convolution network, after 14 epochs of total training, the results were:
+* **0.997%** accuracy in training set
+* **0.961%** accuracy in validation set
+While the minimum cross entropie did not drop much and may be within variance, the model succeeded at reaching that minimum in 30% fewer epochs than the base model did, which was a good reason for me to stick with this architecture.
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
+So as next step I tried to implement the Multi Scale Architecture as proposed by Sermant and LeCun on top of the convolutions. For this I also had to adapt some of the layer sizes relatively towards each other. The result after just 8 epochs of training was somewhat of a double-edged sword:
+* **0.997%** accuracy in training set
+* **0.955%** accuracy in validation set
+
+While models capability to reach certainty about classes has again increased by a big 40%, the overfitting has also increased slightly. So I decided to give this model another shot with slight dropouts inside the now branched convolution layers. The result after 10 epochs was:
+* **0.997%** accuracy in training set
+* **0.971%** accuracy in validation set
+
+Since that worked better even as expected well, I started now adding strong dropout to both fully connected layers in order to further push the generalizing capabilities of the network and thus increase the validation accuracy. The result after 20 epochs was:
+* **0.997%** accuracy in training set
+* **0.989%** accuracy in validation set
+
+In order to decrease overfitting even more, I added L2 regularisation with different factors to the loss function, but the results were all worse. I interpret it the way that in my model, dropout encourages larger absolute weight combinations to make up for lost connections, while L2 regularization penalizes growing absolute weights, so that the two do not work together very well. 
+
+So as last attempt I increased convolution dropout a little bit more and tried to reach a training accuracy of 0.999% My final model results were:
+* **0.xxx%** accuracy in training set
+* **0.xxx%** accuracy in validation set
+* **0.xxx%** accuracy in test set
+
 
 ### Test a Model on New Images
 
@@ -264,12 +283,13 @@ I have captured 44 traffic sign images from the web:
 
 ![Images from Web][image13]
 
-Each images refers to one traffic sign class of our network. One images not refer to a unknown traffic sign class.
-Half of the images have been captured from google StreetView, but some classes were hard to find, so I extracted whatever google image search could find. For the class *[006]: "End of speed limit (80km/h)"* I just ended up drawing a somewhat "authentic" ;) traffic sign with gimp.
+Each images refers to one traffic sign class of our network. One image does actually refer to a unknown traffic sign class.
+Half of the images have been captured from google StreetView, but some classes were hard to find, so I extracted whatever google image search could find. For the class *[006]: "End of speed limit (80km/h)"* I just ended up drawing a somewhat "authentic" ;) traffic sign with [gimp](https://www.gimp.org/).
 
 #### 2. Discuss the model's predictions on these new traffic signs
 
-The models predictions on the web data set are all correct (all, but the unknown image).This exceeds the precision of the test set, but that might be just caused by the small size of the set. Furthermore, the predictions for all non-correct classes are almost 0, which means that the model has been very certain about its predictions. This certainly a result of using the cross entropy as loss function. Perpective, varying backgrounds, variying contrast/brightness and even a smiley face could not detract the network from its correct predictions.
+The models predictions on the web data set are all correct (all, but the unknown image).This exceeds the precision of the test set, but that might be just caused by the small size of the web set. Furthermore, the predictions for all non-correct classes are almost 0, which means that the model has been very certain about its predictions. This is definitely a result of using the cross entropy as loss function. It come at the loss that the model is also almost certain about classes it doesn't even know.
+On the strong side, perpective, varying backgrounds, variying contrast/brightness and even a smiley face could not detract the network from delivering correct predictions.
 
 #### 3. Describe how certain the model is when predicting on each of the five new images
 
@@ -285,7 +305,10 @@ For the second image, the model has learned the diagonal backslash, which belong
 In general I think this section would be much more fun, if the model was less accurate in its predictons.
 
 
-### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
-####1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
+### (Optional) Visualizing the Neural Network
+
+#### 1. Discuss the visual output of your trained network's feature maps
+
+What characteristics did the neural network use to make classifications?
 
 
