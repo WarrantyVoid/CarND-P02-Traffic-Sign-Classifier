@@ -289,6 +289,8 @@ So as last attempt I increased convolution dropout a little bit more and tried t
 
 #### 1. Choose five German traffic signs found on the web and provide them in the report
 
+**Note**: I have made the following experiments in parallel to the training in previous chapter. The reason of that being total training taking about 50+ hours on my laptop. So the following writeup does not match exactly the final network model. More specifically I've used a model with 5x5 as first convolution here, which despite having inferior validation accuracy outperformed the final model on the web images.
+
 I have captured 44 traffic sign images from the web:
 
 ![Images from Web][image13]
