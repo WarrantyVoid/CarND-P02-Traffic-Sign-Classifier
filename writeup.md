@@ -27,7 +27,8 @@ The goals / steps of this project are the following:
 [image13]: ./examples/web_images.png "Images from Web"
 [image14]: ./examples/misinterpretations.png "Misinterpretations"
 [image15]: ./examples/featuremaps.png "Feature Map Convolution 1"
-[image16]: ./examples/featuremaps_pool.png "Feature Map Convolution 1 Max Pooling"
+[image16]: ./examples/featuremapspool.png "Feature Map Convolution 1 Max Pooling"
+
 ---
 
 ## Rubric Points
