@@ -28,6 +28,7 @@ The goals / steps of this project are the following:
 [image14]: ./examples/misinterpretations.png "Misinterpretations"
 [image15]: ./examples/featuremaps.png "Feature Map Convolution 1"
 [image16]: ./examples/featuremapspool.png "Feature Map Convolution 1 Max Pooling"
+[image17]: ./examples/featuremaps3.png "Feature Map Convolution 3"
 
 ---
 
@@ -289,8 +290,6 @@ So as last attempt I increased convolution dropout a little bit more and tried t
 
 #### 1. Choose five German traffic signs found on the web and provide them in the report
 
-**Note**: I have made the following experiments in parallel to the training in previous chapter. The reason of that being total training taking about 50+ hours on my laptop. So the following writeup does not match exactly the final network model. More specifically I've used a model with 5x5 as first convolution here, which despite having inferior validation accuracy outperformed the final model on the web images.
-
 I have captured 44 traffic sign images from the web:
 
 ![Images from Web][image13]
@@ -346,4 +345,6 @@ While passing through the successive convulutions, the image data is getting mor
 a) How the ReLu consistently seems to act as some kind of filter silencing noise in low range of the feature maps (e.h. on the outside of the traffic sign)
 
 b) How well the model has been actually trained. Even in highest convolution layer there are no repititions in feature maps and no dead featur maps either. Almost every map has at least several brighter spots after the ReLu. This is very likely an accomplishment of the dropout technique.
+
+!["Feature Map Convolution 3"][image17]
 
